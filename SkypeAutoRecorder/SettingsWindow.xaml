@@ -1,0 +1,324 @@
+﻿<Window x:Class="SkypeAutoRecorder.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="clr-namespace:SkypeAutoRecorder.Configuration"
+        xmlns:cmds="clr-namespace:SkypeAutoRecorder"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        Title="Settings"
+        Width="600"
+        Height="480"
+        MinWidth="500"
+        MinHeight="445"
+        Icon="/SkypeAutoRecorder;component/Images/MainIcon.ico"
+        ResizeMode="CanResize"
+        WindowStartupLocation="CenterScreen"
+        d:DataContext="{d:DesignInstance c:Settings}"
+        mc:Ignorable="d">
+  <Window.Resources>
+    <Style x:Key="FileNameTextBox" TargetType="TextBox">
+      <Style.Triggers>
+        <Trigger Property="Validation.HasError" Value="true">
+          <Setter Property="Background" Value="LightSalmon" />
+        </Trigger>
+      </Style.Triggers>
+      <Setter Property="Validation.ErrorTemplate">
+        <Setter.Value>
+          <ControlTemplate>
+            <Border BorderThickness="0">
+              <AdornedElementPlaceholder />
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+      <Setter Property="Background" Value="White" />
+    </Style>
+  </Window.Resources>
+  <Window.CommandBindings>
+    <CommandBinding CanExecute="okCommandCanExecute"
+                    Command="{x:Static cmds:SettingsWindow.OkCommand}"
+                    Executed="okCommandExecuted" />
+  </Window.CommandBindings>
+  <Grid Name="MainGrid" Margin="10">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <CheckBox Margin="3"
+              HorizontalAlignment="Left"
+              VerticalAlignment="Center"
+              IsChecked="{Binding RelativeSource={RelativeSource FindAncestor,
+                                                                 AncestorType={x:Type Window}},
+                                  Path=Autostart,
+                                  Mode=TwoWay}">
+      <TextBlock Text="Autostart with Windows" />
+    </CheckBox>
+    <TabControl Grid.Row="1" Margin="3">
+      <TabItem Header="Records">
+        <Grid Margin="4">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+          <TextBlock Margin="0,0,0,2" Text="Filters:" />
+          <ListView Grid.Row="1"
+                    ItemsSource="{Binding Filters,
+                                          Mode=TwoWay}"
+                    Validation.Error="filtersListError"
+                    d:DataContext="{d:DesignInstance c:Settings}">
+            <ListView.ItemContainerStyle>
+              <Style TargetType="ListViewItem">
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+              </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.View>
+              <GridView>
+                <GridViewColumn Width="205" Header="Contacts">
+                  <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                      <TextBox Text="{Binding Contacts}" d:DataContext="{d:DesignInstance c:Filter}" />
+                    </DataTemplate>
+                  </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+                <GridViewColumn Width="270" Header="File name">
+                  <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                      <TextBox Style="{DynamicResource FileNameTextBox}" d:DataContext="{d:DesignInstance c:Filter}">
+                        <TextBox.Text>
+                          <Binding NotifyOnValidationError="True"
+                                   Path="RawFileName"
+                                   UpdateSourceTrigger="PropertyChanged">
+                            <Binding.ValidationRules>
+                              <c:PathValidationRule ValidatesOnTargetUpdated="True" />
+                            </Binding.ValidationRules>
+                          </Binding>
+                        </TextBox.Text>
+                      </TextBox>
+                    </DataTemplate>
+                  </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+                <GridViewColumn Width="55">
+                  <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                      <StackPanel Orientation="Horizontal">
+                        <Button Width="20"
+                                Height="20"
+                                VerticalAlignment="Center"
+                                Click="browseFilterFolderButtonClick"
+                                Tag="{Binding}">
+                          <Image Source="/SkypeAutoRecorder;component/Images/SelectFolder.png" />
+                          <Button.ToolTip>
+                            <ToolTip>
+                              <TextBlock>Select folder</TextBlock>
+                            </ToolTip>
+                          </Button.ToolTip>
+                        </Button>
+                        <Button Width="20"
+                                Height="20"
+                                Margin="3,0,0,0"
+                                VerticalAlignment="Center"
+                                Click="removeButtonClick"
+                                Tag="{Binding}">
+                          <Image Source="/SkypeAutoRecorder;component/Images/Remove.png" />
+                          <Button.ToolTip>
+                            <ToolTip>
+                              <TextBlock>Remove filter</TextBlock>
+                            </ToolTip>
+                          </Button.ToolTip>
+                        </Button>
+                      </StackPanel>
+                    </DataTemplate>
+                  </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+              </GridView>
+            </ListView.View>
+          </ListView>
+          <StackPanel Grid.Row="2">
+            <Grid Margin="0,4,0,0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Margin="0,0,10,0" VerticalAlignment="Top">
+                Filter can contain few contacts separated with
+                <Bold>semicolon</Bold>
+                or
+                <Bold>comma</Bold>
+                .
+              </TextBlock>
+              <Button Grid.Column="1"
+                      HorizontalAlignment="Right"
+                      Click="addButtonClick"
+                      Padding="8,3">
+                <StackPanel Orientation="Horizontal">
+                  <Image Source="/SkypeAutoRecorder;component/Images/Add.png" />
+                  <TextBlock Margin="3,0,0,0" Text="Add" />
+                </StackPanel>
+              </Button>
+            </Grid>
+            <CheckBox Name="RecordUnfilteredCheckBox"
+                      Margin="0,10,0,2"
+                      VerticalAlignment="Center"
+                      IsChecked="{Binding RecordUnfiltered}">
+              <TextBlock Text="Record unfiltered conversations to:" />
+            </CheckBox>
+            <Grid Margin="18,0,0,0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <TextBox IsEnabled="{Binding ElementName=RecordUnfilteredCheckBox, Path=IsChecked}" Style="{DynamicResource FileNameTextBox}">
+                <TextBox.Text>
+                  <Binding Path="DefaultRawFileName" UpdateSourceTrigger="PropertyChanged">
+                    <Binding.ValidationRules>
+                      <c:PathValidationRule ValidatesOnTargetUpdated="True" />
+                    </Binding.ValidationRules>
+                  </Binding>
+                </TextBox.Text>
+              </TextBox>
+              <Button Grid.Column="1"
+                      Width="20"
+                      Height="20"
+                      Margin="3,0,0,0"
+                      VerticalAlignment="Center"
+                      Click="browseDefaultFolderButtonClick"
+                      IsEnabled="{Binding ElementName=RecordUnfilteredCheckBox,
+                                          Path=IsChecked}">
+                <Image Source="/SkypeAutoRecorder;component/Images/SelectFolder.png" />
+                <Button.ToolTip>
+                  <ToolTip>
+                    <TextBlock>Select folder</TextBlock>
+                  </ToolTip>
+                </Button.ToolTip>
+              </Button>
+            </Grid>
+            <TextBlock Margin="0,10,0,2" Text="Don't record conversations with contacts:" />
+            <TextBox Text="{Binding ExcludedContacts}" />
+            <TextBlock Margin="0,10,0,0">
+              Available placeholders for file names:
+              <Hyperlink NavigateUri=""
+                         RequestNavigate="onPlaceholderClick"
+                         Tag="{}{contact}">
+                <TextBlock>{contact}</TextBlock>
+                <Hyperlink.ToolTip>
+                  <ToolTip>
+                    <TextBlock>Copy to clipboard</TextBlock>
+                  </ToolTip>
+                </Hyperlink.ToolTip>
+              </Hyperlink>
+              ,
+              <Hyperlink NavigateUri=""
+                         RequestNavigate="onPlaceholderClick"
+                         Tag="{}{date-time}">
+                <TextBlock>{date-time}</TextBlock>
+                <Hyperlink.ToolTip>
+                  <ToolTip>
+                    <TextBlock>Copy to clipboard</TextBlock>
+                  </ToolTip>
+                </Hyperlink.ToolTip>
+              </Hyperlink>
+              ,
+              <Hyperlink NavigateUri=""
+                         RequestNavigate="onPlaceholderClick"
+                         Tag="{}{duration}">
+                <TextBlock>{duration}</TextBlock>
+                <Hyperlink.ToolTip>
+                  <ToolTip>
+                    <TextBlock>Copy to clipboard</TextBlock>
+                  </ToolTip>
+                </Hyperlink.ToolTip>
+              </Hyperlink>
+              .
+            </TextBlock>
+          </StackPanel>
+        </Grid>
+      </TabItem>
+      <TabItem Header="Sound">
+        <StackPanel Margin="4">
+          <StackPanel Orientation="Horizontal">
+            <CheckBox Name="ProduceHighQualitySoundCheckBox"
+                      VerticalAlignment="Center"
+                      IsChecked="{Binding HighQualitySound}">
+              <TextBlock Text="Produce high-quality MP3-file:" />
+            </CheckBox>
+            <ComboBox Margin="10,0,0,0"
+                      IsEnabled="{Binding ElementName=ProduceHighQualitySoundCheckBox,
+                                          Path=IsChecked}"
+                      ItemsSource="{Binding SoundSampleFrequencies}"
+                      SelectedValue="{Binding SoundSampleFrequency}" />
+            <TextBlock Margin="5,0"
+                       VerticalAlignment="Center"
+                       Text="kHz" />
+            <ComboBox Margin="10,0,0,0"
+                      IsEnabled="{Binding ElementName=ProduceHighQualitySoundCheckBox,
+                                          Path=IsChecked}"
+                      ItemsSource="{Binding SoundBitrates}"
+                      SelectedValue="{Binding SoundBitrate}" />
+            <TextBlock Margin="5,0"
+                       VerticalAlignment="Center"
+                       Text="kbps" />
+          </StackPanel>
+          <CheckBox Margin="0,10"
+                    VerticalAlignment="Center"
+                    IsChecked="{Binding SeparateSoundChannels}">
+            <TextBlock Text="Separate sound channels" />
+          </CheckBox>
+          <TextBlock Margin="0,0,0,2" Text="Increase volume of the recorded file:" />
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Slider Name="VolumeScaleSlider"
+                    IsMoveToPointEnabled="True"
+                    IsSnapToTickEnabled="True"
+                    Maximum="50"
+                    Minimum="1"
+                    SmallChange="1"
+                    TickPlacement="BottomRight"
+                    Value="{Binding VolumeScale}" />
+            <TextBlock Grid.Column="1"
+                       Margin="3,0,0,0"
+                       VerticalAlignment="Center"
+                       Text="x" />
+            <TextBlock Grid.Column="2"
+                       Margin="1,0,0,0"
+                       VerticalAlignment="Center"
+                       Text="{Binding ElementName=VolumeScaleSlider,
+                                      Path=Value}" />
+          </Grid>
+        </StackPanel>
+      </TabItem>
+    </TabControl>
+    <Grid Grid.Row="2" Margin="3,10,3,3">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <Button Width="115"
+              HorizontalAlignment="Left"
+              Click="resetToDefaultButtonClick"
+              Padding="3">
+        Reset to default
+      </Button>
+      <Button Grid.Column="1"
+              Width="85"
+              Command="{x:Static cmds:SettingsWindow.OkCommand}"
+              IsDefault="True"
+              Padding="3">
+        OK
+      </Button>
+      <Button Grid.Column="2"
+              Width="85"
+              Margin="3,0,0,0"
+              IsCancel="True"
+              Padding="3">
+        Cancel
+      </Button>
+    </Grid>
+  </Grid>
+</Window>
